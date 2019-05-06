@@ -28,6 +28,13 @@
       let questions=[];
       let waiting=true;
       let started=false;
+      let speaking=false;
+      var msg = new SpeechSynthesisUtterance();
+        msg.onend= function (event) {
+            console.log("HI AGAIN");
+            recognition.start();
+            speaking=false;
+        };
       var all_questions=["hello human"];
       if(localStorage.getItem("questions")) {
           all_questions=JSON.parse(localStorage.getItem("questions"));
@@ -42,29 +49,28 @@
 
       }
       function answer_question(question) {
+          speaking=true;
         recognition.stop();
         $("#conversation").append("<li class='me'>"+question+"</li>")
 
-        all_questions.push(question);
-        localStorage.setItem("questions",JSON.stringify(all_questions))
+      
        // $("#conversation").append("<li class='they'>"+questions[current_question].transcript+"</li>")
 
           
-        var msg = new SpeechSynthesisUtterance();
-        setTimeout(function(){
-          recognition.start();
-        },1000)
+   
         
       
         var voices = window.speechSynthesis.getVoices();
-        msg.voice = voices[10]; // Note: some voices don't support altering params
+        msg.voice = voices[0]; // Note: some voices don't support altering params
         msg.voiceURI = 'native';
         msg.volume = 1; // 0 to 1
-        msg.rate = 1; // 0.1 to 10
-        msg.pitch = 2; //0 to 2
+        msg.rate = 0.8; // 0.1 to 10
+        msg.pitch = 0.2; //0 to 2
         msg.text = all_questions[Math.floor(Math.random()*all_questions.length)];
         msg.lang = 'en-US';
         speechSynthesis.speak(msg);
+        all_questions.push(question);
+        localStorage.setItem("questions",JSON.stringify(all_questions))
         $("#conversation").append("<li class='they'>"+msg.text+"</li>")
 
       }
@@ -102,7 +108,7 @@
           if(started) {
             if((Date.now()-last_word_time)>1000) {
               if(questions.length>0) {
-                answer_question(questions[questions.length-1][0].transcript)
+                if(speaking==false) answer_question(questions[questions.length-1][0].transcript)
                 questions=[];
               }
             }
