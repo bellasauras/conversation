@@ -1,19 +1,31 @@
 <!DOCTYPE html>
 <html>
   <style>
+      body {
+          background-color: black;
+          padding:0;
+          margin:0;
+
+      }
     .me {
-      color:blue;
+      color:greenyellow;
+      font-family: 'Gloria Hallelujah', cursive;
+      font-size:30px;
+
     }
     .they {
       color:blueviolet;
+      font-family: 'Source Code Pro', monospace;
+        font-size:30px;
     }
   </style>
   <head>
     <meta charset="UTF-8">
     <title>dialogos</title>
+    <link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah|Source+Code+Pro" rel="stylesheet">
+
   </head>
   <body>
-    <h1>dialogos</h1>
     <ul id="conversation">
 
     </ul>
@@ -48,10 +60,29 @@
           recognition.start();
 
       }
+      function random_text() {
+        return all_questions[Math.floor(Math.random()*all_questions.length)]
+      }
+    function generate_answer() {
+        let words=[]
+        words.push(random_text().split(" ")[0])
+        console.log(words);
+        answer=""
+      
+        for(let i=0;i<8888;i++) {
+            let random_words=random_text().split(" ");
+            if(random_words[words.length]&&words[words.length-1]==random_words[words.length-1]) words.push(random_words[words.length])
+        }
+        for(let i=0;i<words.length;i++) {
+            answer=answer+words[i]+" "
+        }
+        return answer.trim();
+    }
       function answer_question(question) {
           speaking=true;
         recognition.stop();
         $("#conversation").append("<li class='me'>"+question+"</li>")
+        $("html, body").animate({ scrollTop: $(document).height() }, 1000);
 
       
        // $("#conversation").append("<li class='they'>"+questions[current_question].transcript+"</li>")
@@ -66,45 +97,17 @@
         msg.volume = 1; // 0 to 1
         msg.rate = 0.8; // 0.1 to 10
         msg.pitch = 0.2; //0 to 2
-        msg.text = all_questions[Math.floor(Math.random()*all_questions.length)];
+        msg.text = generate_answer();
         msg.lang = 'en-US';
         speechSynthesis.speak(msg);
         all_questions.push(question);
         localStorage.setItem("questions",JSON.stringify(all_questions))
         $("#conversation").append("<li class='they'>"+msg.text+"</li>")
+        $("html, body").animate({ scrollTop: $(document).height() }, 1000);
 
       }
       function response_interval() {
-          // if(started) {
-          //   if(waiting==true) {
-          //     if(questions[current_question]&&(Date.now()-last_word_time)>1000) {
-          //       waiting=false;
-          //       console.log(questions[current_question].transcript);
-          //       all_questions.push(questions[current_question].transcript);
-          //       localStorage.setItem("all_questions",JSON.stringify(questions[current_question].transcript))
-          //       $("#conversation").append("<li>"+questions[current_question].transcript+"</li>")
-          //       current_question=current_question+1;
-          //       new_question=null
-          //     }
-          //   } else {
-              // var msg = new SpeechSynthesisUtterance();
-              // var voices = window.speechSynthesis.getVoices();
-              // msg.voice = voices[10]; // Note: some voices don't support altering params
-              // msg.voiceURI = 'native';
-              // msg.volume = 1; // 0 to 1
-              // msg.rate = 1; // 0.1 to 10
-              // msg.pitch = 2; //0 to 2
-              // msg.text = all_questions[Math.floor(Math.random()*all_questions.length)];
-              // msg.lang = 'en-US';
-          //     // speechSynthesis.speak(msg);
-          //     new_question=null;
-          //     setTimeout(function(){
-          //       waiting=true;
-          //     },1000)
-          //     $("#conversation").append("<li>"+msg.text+"</li>")
-
-          //   }
-          // }
+      
           if(started) {
             if((Date.now()-last_word_time)>1000) {
               if(questions.length>0) {
