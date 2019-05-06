@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    .me {
+      color:blue;
+    }
+    .they {
+      color:blueviolet;
+    }
+  </style>
+  <head>
+    <meta charset="UTF-8">
+    <title>dialogos</title>
+  </head>
+  <body>
+    <h1>dialogos</h1>
+    <ul id="conversation">
+
+    </ul>
+  </body>
+  <script
+  src="https://code.jquery.com/jquery-3.4.0.js"
+  integrity="sha256-DYZMCC8HTC+QDr5QNaIcfR7VSPtcISykd+6eSmBW5qo="
+  crossorigin="anonymous"></script>
+  <script>
+      let last_word_time=Date.now();
+      let current_question=0;
+      let questions=[];
+      let waiting=true;
+      let started=false;
+      var all_questions=["hello human"];
+      if(localStorage.getItem("questions")) {
+          all_questions=JSON.parse(localStorage.getItem("questions"));
+      }
+      console.log("[all questions]",all_questions);
+
+      function start() {
+          console.log("started");
+          started=true;
+          $("#start-button").hide();
+          recognition.start();
+
+      }
+      function answer_question(question) {
+        recognition.stop();
+        $("#conversation").append("<li class='me'>"+question+"</li>")
+
+        all_questions.push(question);
+        localStorage.setItem("questions",JSON.stringify(all_questions))
+       // $("#conversation").append("<li class='they'>"+questions[current_question].transcript+"</li>")
+
+          
+        var msg = new SpeechSynthesisUtterance();
+        setTimeout(function(){
+          recognition.start();
+        },1000)
+        
+      
+        var voices = window.speechSynthesis.getVoices();
+        msg.voice = voices[10]; // Note: some voices don't support altering params
+        msg.voiceURI = 'native';
+        msg.volume = 1; // 0 to 1
+        msg.rate = 1; // 0.1 to 10
+        msg.pitch = 2; //0 to 2
+        msg.text = all_questions[Math.floor(Math.random()*all_questions.length)];
+        msg.lang = 'en-US';
+        speechSynthesis.speak(msg);
+        $("#conversation").append("<li class='they'>"+msg.text+"</li>")
+
+      }
+      function response_interval() {
+          // if(started) {
+          //   if(waiting==true) {
+          //     if(questions[current_question]&&(Date.now()-last_word_time)>1000) {
+          //       waiting=false;
+          //       console.log(questions[current_question].transcript);
+          //       all_questions.push(questions[current_question].transcript);
+          //       localStorage.setItem("all_questions",JSON.stringify(questions[current_question].transcript))
+          //       $("#conversation").append("<li>"+questions[current_question].transcript+"</li>")
+          //       current_question=current_question+1;
+          //       new_question=null
+          //     }
+          //   } else {
+              // var msg = new SpeechSynthesisUtterance();
+              // var voices = window.speechSynthesis.getVoices();
+              // msg.voice = voices[10]; // Note: some voices don't support altering params
+              // msg.voiceURI = 'native';
+              // msg.volume = 1; // 0 to 1
+              // msg.rate = 1; // 0.1 to 10
+              // msg.pitch = 2; //0 to 2
+              // msg.text = all_questions[Math.floor(Math.random()*all_questions.length)];
+              // msg.lang = 'en-US';
+          //     // speechSynthesis.speak(msg);
+          //     new_question=null;
+          //     setTimeout(function(){
+          //       waiting=true;
+          //     },1000)
+          //     $("#conversation").append("<li>"+msg.text+"</li>")
+
+          //   }
+          // }
+          if(started) {
+            if((Date.now()-last_word_time)>1000) {
+              if(questions.length>0) {
+                answer_question(questions[questions.length-1][0].transcript)
+                questions=[];
+              }
+            }
+          }
+          
+      }
+
+        var new_question=null;
+        var response_timeout;
+        var grammar = '#JSGF V1.0; grammar colors; public <color> = aqua | azure | beige | bisque | black | blue | brown | chocolate | coral | crimson | cyan | fuchsia | ghostwhite | gold | goldenrod | gray | green | indigo | ivory | khaki | lavender | lime | linen | magenta | maroon | moccasin | navy | olive | orange | orchid | peru | pink | plum | purple | red | salmon | sienna | silver | snow | tan | teal | thistle | tomato | turquoise | violet | white | yellow ;'
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+  
+
+        recognition.onstart = function() { console.log("onstart") }
+        recognition.onresult = function(event) { 
+            // console.log(event) 
+            console.log(event.results[event.results.length-1][0].transcript)
+            new_question=event.results[event.results.length-1][0].transcript;
+            questions=event.results
+            last_word_time=Date.now();
+            // 
+        }
+        recognition.onerror = function(event) { console.log("onerror") }
+        recognition.onend = function() {console.log("onend") }
+        setInterval(response_interval,300);
+        if (navigator.requestMIDIAccess) {
+    console.log('This browser supports WebMIDI!');
+    navigator.requestMIDIAccess()
+    .then(onMIDISuccess, onMIDIFailure);
+
+function onMIDISuccess(midiAccess) {
+    console.log(midiAccess);
+
+    var inputs = midiAccess.inputs;
+    var outputs = midiAccess.outputs;
+}
+
+function onMIDIFailure() {
+    console.log('Could not access your MIDI devices.');
+}
+} else {
+    console.log('WebMIDI is not supported in this browser.');
+}
+  </script>
+<button onclick="javascript:start()" id="start-button">start</button>
+</html>
